@@ -8,3 +8,7 @@ The OLED display then shows which button you have pressed on the webpage.
 This demo can be used to implement some IOT tiny devices with a webfrontend while 
 still having a little status display on the device itself.
 
+# Howto compile and deploy
+I was using MS Visual Code and PlatformIO extension for it. See various tutorials on 
+howto start with both.
+
