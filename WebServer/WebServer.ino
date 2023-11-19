@@ -36,9 +36,6 @@
 // General OS
 #include <Arduino.h>
 
-// LEDS
-#include <WS2812FX.h>
-
 // OLED
 #include <U8g2lib.h>
 
@@ -62,8 +59,6 @@
   #include <Wire.h>
 #endif
 
-#define LED_COUNT 1
-#define LED_PIN 39
 #define SDA_PIN 41
 #define SCL_PIN 40
 
@@ -72,9 +67,6 @@
 #define DISPLAY_MAX_Y 39 // [0,39] -> 40 pixels
 #define DISPLAY_ROW_HIGHT 10
 #define DISPLAY_MAX_CHAR_LINE 11
-
-// Init the one LED 
-WS2812FX ws2812fx = WS2812FX(LED_COUNT, LED_PIN, NEO_RGB + NEO_KHZ800);
 
 // Init the OLED display
 U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   // EastRising 0.42" OLED
@@ -111,17 +103,6 @@ void u8g2_prepare(void) {
 }
 
 
-// Color changes to internal LED
-void setColor(const uint8_t& r, const uint8_t& g, const uint8_t& b ) {
-  ws2812fx.stop();
-  // No need to start when color is off
-  if (r !=0 && g != 0 && b != 0) {
-    ws2812fx.setColor(r,g,b);
-    ws2812fx.start();
-  }
-}
-
-
 // Web server path handlers
 void handleRoot() {
   server.sendHeader("Server", "Webserver Demo ESP32-S3-0.42OLED");
@@ -130,40 +111,24 @@ void handleRoot() {
 }
 
 void handleOff() {
-  setColor(0,0,0);
   received_string = "LED off";
   handleRoot();
 }
 
 void handleRed() {
-  setColor(255,0,0);
   received_string = "LED red";
   handleRoot();
 }
 
 void handleGreen() {
-  setColor(0,255,0);
   received_string = "LED green";
   handleRoot();
 }
 
 void handleBlue() {
-  setColor(0,0,255);
   received_string = "LED blue";
   handleRoot();
 }
-
-void blinkLed() {
-  setColor(0,0,0);
-  delay(500);
-  setColor(0,255,0);
-  delay(500);
-  setColor(0,0,0);
-  delay(500);
-  setColor(0,255,0);
-  handleRoot();
-}
-
 
 void handleNotFound() {
   String message = "File Not Found\n\n";
@@ -211,18 +176,6 @@ void draw(void) {
 
 
 void setup(void) {
-  // Set RGB LED to dodger blue (0,123,255)
-  ws2812fx.init();
-  
-  // low brightness
-  ws2812fx.setBrightness(10); // [0,255]
-  ws2812fx.setSpeed(1000);
-  
-  // Dodger blue
-  setColor(0,123,255);
-
-  ws2812fx.setMode(FX_MODE_STATIC);
-  ws2812fx.start();
 
   Wire.begin(SDA_PIN, SCL_PIN);
   
@@ -266,9 +219,6 @@ void setup(void) {
   u8g2.clear();
   u8g2.sendBuffer();
   
-  blinkLed();
-
-
   // Set hostname and advertise on the network (http://esp32oled.local)
   MDNS.begin("esp32oled");
 
@@ -283,9 +233,8 @@ void setup(void) {
 }
 
 void loop(void) {
-  ws2812fx.service();
   
-  // display received event
+  // Display received event
   u8g2.clearBuffer();
   draw();
   u8g2.sendBuffer();
