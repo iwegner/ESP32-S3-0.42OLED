@@ -111,22 +111,22 @@ void handleRoot() {
 }
 
 void handleOff() {
-  received_string = "LED off";
+  received_string = "Off";
   handleRoot();
 }
 
 void handleRed() {
-  received_string = "LED red";
+  received_string = "Red";
   handleRoot();
 }
 
 void handleGreen() {
-  received_string = "LED green";
+  received_string = "Green";
   handleRoot();
 }
 
 void handleBlue() {
-  received_string = "LED blue";
+  received_string = "Blue";
   handleRoot();
 }
 
