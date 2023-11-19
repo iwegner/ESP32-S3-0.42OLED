@@ -1,0 +1,7 @@
+// Adapt to your needs
+#define USERNAME "MY_USERNAME"
+#define DEVICE_ID "MY_DEVIDEID"
+#define DEVICE_CREDENTIAL "MY_CREDENTIALS"
+
+#define SSID "MY_SSID"
+#define SSID_PASSWORD "MY_PW"
