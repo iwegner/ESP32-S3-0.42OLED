@@ -45,11 +45,17 @@
 #include <WebServer.h>
 #include <ESPmDNS.h>
 
+#include <NTPClient.h>
+#include <WiFiUdp.h>
+
 
 // adapt and modify for your SSID
 //#include "private_wifi.h"
 #include "private_wifi_dontcommit.h" // or create a file with that name with the contents of the file above
 
+// Define NTP Client to get time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
 
 #ifdef U8X8_HAVE_HW_SPI
   #include <SPI.h>
@@ -59,6 +65,7 @@
   #include <Wire.h>
 #endif
 
+// Defines for the OLED display
 #define SDA_PIN 41
 #define SCL_PIN 40
 
@@ -73,7 +80,12 @@ U8G2_SSD1306_72X40_ER_F_HW_I2C u8g2(U8G2_R0, /* reset=*/ U8X8_PIN_NONE);   // Ea
 
 WebServer server(80); // Port for web server (80, default for HTTP)
 
+// Received keys from web server
 String received_string = "";
+
+// Variable to save the current time
+String timestamp;
+
 
 // Create a simple HTML page, as a string showing
 // some buttons to interact with the OLED display
@@ -92,7 +104,6 @@ char html[] = "<html><head><title>ESP32-S3-0.42OLED WebServer Demo</title>"
               "<p><a href=\"/G\"><button class=\"button3\">led green</button></a></p>"
               "<p><a href=\"/B\"><button class=\"button4\">led blue</button></a></p>"
               "</body></html>";
-
 
 void u8g2_prepare(void) {
   u8g2.setFont(u8g2_font_6x10_tf);
@@ -171,12 +182,16 @@ void draw(void) {
   u8g2.drawLine(0, DISPLAY_ROW_HIGHT, DISPLAY_MAX_X, DISPLAY_ROW_HIGHT); // horizontal line underneath the headline
 
   // draw current color
-  u8g2.drawStr(2, DISPLAY_ROW_HIGHT * 2, received_string.c_str());
+  u8g2.drawStr(2, DISPLAY_MAX_Y * 1.0 / 3.0, received_string.c_str());
+
+  // draw time in last line
+  u8g2.drawStr(2, DISPLAY_MAX_Y * 2.0 / 3.0, timestamp.c_str());
 }
 
 
 void setup(void) {
 
+  // Init OLED display
   Wire.begin(SDA_PIN, SCL_PIN);
   
   // Init display
@@ -218,6 +233,15 @@ void setup(void) {
   
   u8g2.clear();
   u8g2.sendBuffer();
+
+  // Initialize a NTPClient to get time
+  timeClient.begin();
+  // Set offset time in seconds to adjust for your timezone, for example:
+  // GMT +1 = 3600
+  // GMT +8 = 28800
+  // GMT -1 = -3600
+  // GMT 0 = 0
+  timeClient.setTimeOffset(3600);
   
   // Set hostname and advertise on the network (http://esp32oled.local)
   MDNS.begin("esp32oled");
@@ -233,7 +257,15 @@ void setup(void) {
 }
 
 void loop(void) {
+  // update time
+  timeClient.update();
+  // while(!timeClient.update()) {
+  //   timeClient.forceUpdate();
+  // }
   
+  // Formatted time
+  timestamp = timeClient.getFormattedTime();
+
   // Display received event
   u8g2.clearBuffer();
   draw();
@@ -243,4 +275,3 @@ void loop(void) {
   delay(2);
 
 }
-     
